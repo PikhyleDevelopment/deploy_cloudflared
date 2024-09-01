@@ -3,12 +3,12 @@
 # Author: Erik Mason
 
 # Color variables
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
+SUCCESS='\033[0;32m' # Green
+WARN='\033[0;31m'    # Red
+INFO='\033[1;33m'    # Yellow
 
 # Usage string
-usage_string="${YELLOW}$(basename "$0") -t CONNECTOR_TOKEN"
+usage_string="${INFO}$(basename "$0") [-h(elp)] [-r(emove)] -i(nstall) -t(oken) CONNECTOR_TOKEN"
 
 echo ' 
  ██████╗██╗      ██████╗ ██╗   ██╗██████╗ ██╗     ███████╗ █████╗ ██████╗ ███████╗██████╗     ██████╗ ███████╗██████╗ ██╗      ██████╗ ██╗   ██╗███╗   ███╗███████╗███╗   ██╗████████╗
@@ -21,42 +21,48 @@ echo '
 '
 
 install () {
+    if [ ! -e /usr/bin/curl ]; then
+        echo -e "${WARN}Curl is required to run this script. Please install and try again."
+        exit 1
+    else 
+        echo -e "${SUCCESS}Curl is installed.. continuing"
+    fi
     # The below commands are from cloudflared documentation here:
     # https://pkg.cloudflare.com/index.html
-    echo -e "${YELLOW}Creating keyrings directory.."
+    echo -e "${INFO}Creating keyrings directory.."
     sudo mkdir -p --mode=0755 /usr/share/keyrings
 
     # Check if GPG key exists
-    if [ ! $(test -f /usr/share/keyrings/cloudflare-main.gpg) ]; then
-        echo -e "${YELLOW}Downloading Cloudflare gpg key.."
+    if [ ! -e /usr/share/keyrings/cloudflare-main.gpg ]; then
+        echo -e "${INFO}Downloading Cloudflare gpg key.."
         curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null
     else
-        echo -e "${YELLOW}Cloudflare GPG key already exists."
+        echo -e "${WARN}Cloudflare GPG key already exists."
     fi
 
     # Check if cloudflared.list exists
-    if [ ! $(test -f /etc/apt/sources.list.d/cloudflared.list) ]; then
-        echo -e "${YELLOW}Setting up Cloudflared repository.."
+    if [ ! -e /etc/apt/sources.list.d/cloudflared.list ]; then
+        echo -e "${INFO}Setting up Cloudflared repository.."
         echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
     else
-        echo -e "${YELLOW}Cloudflared.list already setup."
+        echo -e "${WARN}Cloudflared.list already setup."
     fi
 
     # Check if cloudflared is already installed
-    if [ ! $(test -x /usr/local/bin/cloudflared) ]; then
-        echo -e "${YELLOW}Installing cloudflared daemon.."
+    if [ ! -x /usr/local/bin/cloudflared ]; then
+        echo -e "${INFO}Installing cloudflared daemon.."
         sudo apt update && sudo NEEDRESTART_MODE=a apt install cloudflared -y
     else    
-        echo -e "${RED}Cloudflared already installed.. exiting. Please manually check service registered properly."
+        echo -e "${WARN}Cloudflared already installed.. exiting. Please manually check service registered properly."
         exit 1
     fi
 
     # Check if cloudflared was installed correctly and register service
-    if [ $(test -x /usr/local/bin/cloudflared) ]; then
-        echo -e "${RED}Cloudflared installation failed.. Exiting.";
+    if [ ! -x /usr/local/bin/cloudflared ]; then
+        echo -e "${WARN}Cloudflared installation failed.. Exiting.";
         exit 1;
     else
-        echo -e "${GREEN}Installation complete. Registering service.."
+        echo -e "${SUCCESS}Installation complete. Registering service.."
         sudo cloudflared service install $1
     fi
 
@@ -64,54 +70,53 @@ install () {
 
     # Confirm service is running
     if [ $(systemctl is-active --quiet "$service_name.service") ]; then
-        echo -e "${RED}Cloudflared failed to start"
+        echo -e "${WARN}Cloudflared failed to start"
     else
-        echo -e "${GREEN}Cloudflared successfully running!"
+        echo -e "${SUCCESS}Cloudflared successfully running!"
     fi
 }
 
 remove () {
     if [[ $(systemctl list-units --full --all | grep cloudflared) ]]; then
-        echo -e "${YELLOW}Uninstalling cloudflared service.."
+        echo -e "${INFO}Uninstalling cloudflared service.."
         sudo cloudflared service uninstall
     else
-        echo -e "${RED}Cloudflared service not found.."
+        echo -e "${WARN}Cloudflared service not found.."
     fi
 
     # Check for GPG key
-    if [ ! $(test -f /usr/share/keyrings/cloudflare-main.gpg) ]; then
-        echo -e "${YELLOW}Removing GPG key.."
+    if [ -e /usr/share/keyrings/cloudflare-main.gpg ]; then
+        echo -e "${INFO}Removing GPG key.."
         sudo rm -rfv /usr/share/keyrings/cloudflare-main.gpg
     else
-        echo -e "${RED}GPG not found.. skipping."
+        echo -e "${WARN}GPG not found.. skipping."
     fi
     # Check for apt list
-    if [ ! $(test -f /etc/apt/sources.list.d/cloudflared.list) ]; then
-        echo -e "${YELLOW}Removing source list.."
+    if [ -e /etc/apt/sources.list.d/cloudflared.list ]; then
+        echo -e "${INFO}Removing source list.."
         sudo rm -rfv /etc/apt/sources.list.d/cloudflared.list
     else
-        echo -e "${RED}Sources list not found.. skipping"
+        echo -e "${WARN}Sources list not found.. skipping"
     fi
     # Check for existence of cloudflared binary
-    if [ ! $(test -x /usr/local/bin/cloudflared) ]; then
-        echo -e "${YELLOW}Removing cloudflared.."
+    if [ -x /usr/local/bin/cloudflared ]; then
+        echo -e "${INFO}Removing cloudflared.."
         sudo apt remove --purge cloudflared -y
 
-        if [ $(test -x /usr/local/bin/cloudflared) ]; then
-            echo -e "${RED}Removal of cloudflared binary NOT successful.."
+        if [ -x /usr/local/bin/cloudflared ]; then
+            echo -e "${WARN}Removal of cloudflared binary NOT successful.."
             exit 1
         else
-            echo -e "${GREEN}Successfully uninstalled cloudflared!"
+            echo -e "${SUCCESS}Successfully uninstalled cloudflared!"
             exit 0
         fi 
     else
-        echo -e "${RED}Cloudflared not currently installed"
+        echo -e "${WARN}Cloudflared not currently installed"
         exit 1
     fi
 }
 
 usage () {
-    # TODO
     echo -e $usage_string
 }
 
@@ -130,7 +135,7 @@ do
 		h) usage; exit 69;;
         i) install_opt=1;;
         r) remove_opt=1;;
-		?) echo -e "${RED}use -t and supply the connector token provided by cloudflare"; exit 69;;
+		?) usage; exit 69;;
 	esac
 done
 
@@ -139,12 +144,13 @@ if [ $remove_opt == 1 ]; then
 fi
 
 if [ ! "$token" ]; then
-	echo -e "${RED}a token must be provided with -t"
+	usage
 	exit 69
 fi
 
 if [[ $install_opt == 1 ]]; then
     install $token
 else
-    echo -e "${RED}Must supply -i and -t {token} together"
+    usage
+    exit 69
 fi 
