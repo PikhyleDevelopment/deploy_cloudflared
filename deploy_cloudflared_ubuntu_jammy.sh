@@ -129,7 +129,7 @@ do
         i) install_opt=1;;
         r) remove_opt=1;;
 		# :) echo -e "${RED}Missing token argument (-t)"; exit 69;;
-		?) echo "use -t and supply the connector token provided by cloudflare"; exit 69;;
+		?) echo -e "${RED}use -t and supply the connector token provided by cloudflare"; exit 69;;
 	esac
 done
 
