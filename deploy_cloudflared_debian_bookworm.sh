@@ -85,14 +85,14 @@ remove () {
     else
         echo -e "${RED}GPG not found.. skipping."
     fi
-
+    # Check for apt list
     if [ ! $(test -f /etc/apt/sources.list.d/cloudflared.list) ]; then
         echo -e "${YELLOW}Removing source list.."
         sudo rm -rfv /etc/apt/sources.list.d/cloudflared.list
     else
         echo -e "${RED}Sources list not found.. skipping"
     fi
-
+    # check for cloudflared binary
     if [ ! $(test -x /usr/local/bin/cloudflared) ]; then
         echo -e "${YELLOW}Removing cloudflared.."
         sudo apt remove --purge cloudflared -y
@@ -121,6 +121,8 @@ remove_opt=0
 # Get switch flags 
 # t for the connector token [required]
 # h for help message
+# i for install
+# r for remove
 while getopts 'rt:hi' flag
 do
 	case "$flag" in
@@ -128,7 +130,6 @@ do
 		h) usage; exit 69;;
         i) install_opt=1;;
         r) remove_opt=1;;
-		# :) echo -e "${RED}Missing token argument (-t)"; exit 69;;
 		?) echo -e "${RED}use -t and supply the connector token provided by cloudflare"; exit 69;;
 	esac
 done
@@ -147,6 +148,3 @@ if [[ $install_opt == 1 ]]; then
 else
     echo -e "${RED}Must supply -i and -t {token} together"
 fi 
-
-# If no switch flag is provided
-
