@@ -27,7 +27,6 @@ echo -e '
 # Install the GPG key, apt source list, and cloudflared binary
 # Then register the cloudflared service with the connector token.
 install () {
-    codename=$(get_linux_version)
     echo -e "${INFO}You're OS codename is: $(lsb_release -sc)"
     if [ ! -e /usr/bin/curl ]; then
         echo -e "${WARN}Curl is required to run this script. Please install and try again."
