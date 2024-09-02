@@ -24,7 +24,11 @@ echo -e '
                     Written by Erik Mason                                                                                                                 
 '
 
+# Install the GPG key, apt source list, and cloudflared binary
+# Then register the cloudflared service with the connector token.
 install () {
+    codename=$(get_linux_version)
+    echo -e "${INFO}You're OS codename is: $(lsb_release -sc)"
     if [ ! -e /usr/bin/curl ]; then
         echo -e "${WARN}Curl is required to run this script. Please install and try again."
         exit 1
@@ -47,7 +51,7 @@ install () {
     # Check if cloudflared.list exists
     if [ ! -e /etc/apt/sources.list.d/cloudflared.list ]; then
         echo -e "${INFO}Setting up Cloudflared repository.."
-        echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
+        echo deb "[signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
     else
         echo -e "${WARN}Cloudflared.list already setup."
     fi
