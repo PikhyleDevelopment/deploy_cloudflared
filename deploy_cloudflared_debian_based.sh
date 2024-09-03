@@ -157,7 +157,7 @@ usage () {
 # h for help message
 # i for install
 # r for remove
-while getopts 'rt:hi' flag
+while getopts 't:hir' flag
 do
 	case "$flag" in
 		t) token=${OPTARG};;
