@@ -164,6 +164,7 @@ do
 		h) usage; exit 69;;
         i) install_opt=1;;
         r) remove_opt=1;;
+        :) usage; exit 69;;
 		?) usage; exit 69;;
 	esac
 done
