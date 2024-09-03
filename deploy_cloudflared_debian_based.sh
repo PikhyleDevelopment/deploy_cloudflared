@@ -2,6 +2,20 @@
 
 # Author: Erik Mason
 
+####################################################################
+# Description:                                                     #
+#                                                                  #
+#   This script is intended to provide a seemless deployment of    #
+#   cloudflared. While installing, the script will check for the   #
+#   presence of the GPG key, repository list, and cloudflared      #
+#   binary. It will install whatever is not detected on the OS.    #
+#                                                                  #
+#   For removal, the same process occurs, removing whatever is     #
+#   detected.                                                      #
+#                                                                  #
+#   Thanks for taking a look!                                      #
+####################################################################
+
 # Color variables
 SUCCESS='\033[0;32m' # Green
 WARN='\033[0;31m'    # Red
