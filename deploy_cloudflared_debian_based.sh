@@ -29,20 +29,18 @@ remove_opt=0
 
 echo -e '                                            
                                                                         
-##  ### ##  #    #  # #      ## #    #  # # ##  ### #    #  ##  ### ##  
-# # #   # # #   # # # #     #   #   # # # # # # #   #   # # # # #   # # 
-# # ##  ##  #   # #  #      #   #   # # # # # # ##  #   ### ##  ##  # # 
-# # #   #   #   # #  #      #   #   # # # # # # #   #   # # # # #   # # 
-##  ### #   ###  #   #       ## ###  #  ### ##  #   ### # # # # ### ##                                             
+            ##  ### ##  #    #  # #      ## #    #  # # ##  ### #    #  ##  ### ##  
+            # # #   # # #   # # # #     #   #   # # # # # # #   #   # # # # #   # # 
+            # # ##  ##  #   # #  #      #   #   # # # # # # ##  #   ### ##  ##  # # 
+            # # #   #   #   # #  #      #   #   # # # # # # #   #   # # # # #   # # 
+            ##  ### #   ###  #   #       ## ###  #  ### ##  #   ### # # # # ### ##                                             
                     
-                    Written by Erik Mason                                                                                                                 
+                                Written by Erik Mason                                                                                                                 
 '
 
 # Install the GPG key, apt source list, and cloudflared binary
 # Then register the cloudflared service with the connector token.
 install () {
-    echo -e "${INFO}You're OS codename is: $(lsb_release -sc)"
-
     # Check for curl, exit if not found.
     if [ ! -e /usr/bin/curl ]; then
         echo -e "${WARN}Curl is required to run this script. Please install and try again."
@@ -95,7 +93,7 @@ install () {
     # Confirm service is running
     # The following check returns 0 if active, so if active
     # it will go to the else statement.
-    if [ $(systemctl is-active --quiet "$service_name.service") ]; then
+    if [[ $(systemctl is-active --quiet "$service_name.service") ]]; then
         echo -e "${WARN}Cloudflared failed to start"
         exit 1
     else
@@ -105,7 +103,6 @@ install () {
 }
 
 remove () {
-    
     # Check to see if the cloudflared service is installed, uninstall
     # the configured service.
     if [[ $(systemctl list-units --full --all | grep cloudflared) ]]; then
