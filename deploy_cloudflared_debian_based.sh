@@ -42,14 +42,19 @@ echo -e '
 # Then register the cloudflared service with the connector token.
 install () {
     echo -e "${INFO}You're OS codename is: $(lsb_release -sc)"
+
+    # Check for curl, exit if not found.
     if [ ! -e /usr/bin/curl ]; then
         echo -e "${WARN}Curl is required to run this script. Please install and try again."
         exit 1
     else 
         echo -e "${SUCCESS}Curl is installed.. continuing"
     fi
+
     # The below commands are from cloudflared documentation here:
     # https://pkg.cloudflare.com/index.html
+
+    # Create, if not already created, the keyrings directory.
     echo -e "${INFO}Creating keyrings directory.."
     sudo mkdir -p --mode=0755 /usr/share/keyrings
 
@@ -74,7 +79,7 @@ install () {
         echo -e "${INFO}Installing cloudflared daemon.."
         sudo apt update && sudo NEEDRESTART_MODE=a apt install cloudflared -y
     else    
-        echo -e "${WARN}Cloudflared already installed.. exiting. Please manually check service registered properly."
+        echo -e "${WARN}Cloudflared already installed.. exiting. Please manually check that the service registered properly."
         exit 1
     fi
 
@@ -88,14 +93,21 @@ install () {
     fi
 
     # Confirm service is running
+    # The following check returns 0 if active, so if active
+    # it will go to the else statement.
     if [ $(systemctl is-active --quiet "$service_name.service") ]; then
         echo -e "${WARN}Cloudflared failed to start"
+        exit 1
     else
         echo -e "${SUCCESS}Cloudflared successfully running!"
+        exit 0
     fi
 }
 
 remove () {
+    
+    # Check to see if the cloudflared service is installed, uninstall
+    # the configured service.
     if [[ $(systemctl list-units --full --all | grep cloudflared) ]]; then
         echo -e "${INFO}Uninstalling cloudflared service.."
         sudo cloudflared service uninstall
@@ -122,6 +134,7 @@ remove () {
         echo -e "${INFO}Removing cloudflared.."
         sudo apt remove --purge cloudflared -y
 
+        # Recheck to make sure cloudflared successfully uninstalled.
         if [ -x /usr/local/bin/cloudflared ]; then
             echo -e "${WARN}Removal of cloudflared binary NOT successful.."
             exit 1
