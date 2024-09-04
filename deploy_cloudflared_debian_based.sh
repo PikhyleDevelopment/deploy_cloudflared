@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 
 # Author: Erik Mason
 
@@ -47,22 +48,31 @@ check_codename () {
         "bullseye"
     )
 
-    supported_os=0
+    if [[ -x /usr/bin/lsb_release ]]; then
 
-    for codename in "${codenames[@]}"; do
-        if [[ $codename == $(lsb_release -sc) ]]; then
-            supported_os=1
-            break
-        else
-            supported_os=0
+        supported_os=0
+
+        for codename in "${codenames[@]}"; do
+            if [[ $codename == $(lsb_release -sc) ]]; then
+                supported_os=1
+                break
+            else
+                supported_os=0
+            fi
+        done
+
+        if [[ ! $supported_os == 1 ]]; then
+            echo -e "${WARN}Unsupported OS. Only supports ${codenames[@]}"
+            exit 2
         fi
-    done
-
-    if [[ ! $supported_os == 1 ]]; then
-        echo "Unsupported OS. Only supports ${codenames[@]}"
+        
+    else
+        echo -e "${WARN}lsb_release is not found.. Exiting.."
         exit 2
-    fi      
+    fi
 }
+
+check_codename  
 
 # Install the GPG key, apt source list, and cloudflared binary
 # Then register the cloudflared service with the connector token.
@@ -192,7 +202,6 @@ do
 	esac
 done
 
-check_codename  
 
 if [ $remove_opt == 1 ]; then
     remove
