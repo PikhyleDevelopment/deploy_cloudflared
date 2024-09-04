@@ -38,6 +38,32 @@ echo -e '
                                 Written by Erik Mason                                                                                                                 
 '
 
+check_codename () {
+    codenames=(
+        "focal"
+        "jammy"
+        "bookworm"
+        "buster"
+        "bullseye"
+    )
+
+    supported_os=0
+
+    for codename in "${codenames[@]}"; do
+        if [[ $codename == $(lsb_release -sc) ]]; then
+            supported_os=1
+            break
+        else
+            supported_os=0
+        fi
+    done
+
+    if [[ ! $supported_os == 1 ]]; then
+        echo "Unsupported OS. Only supports ${codenames[@]}"
+        exit 2
+    fi      
+}
+
 # Install the GPG key, apt source list, and cloudflared binary
 # Then register the cloudflared service with the connector token.
 install () {
@@ -165,6 +191,8 @@ do
 		?) usage; exit 69;;
 	esac
 done
+
+check_codename  
 
 if [ $remove_opt == 1 ]; then
     remove
