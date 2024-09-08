@@ -72,8 +72,6 @@ check_codename () {
     fi
 }
 
-check_codename  
-
 # Install the GPG key, apt source list, and cloudflared binary
 # Then register the cloudflared service with the connector token.
 install () {
@@ -183,6 +181,7 @@ remove () {
 
 usage () {
     echo -e $usage_string
+    echo -e "${INFO}This scripts automates the steps located here: https://pkg.cloudflare.com/index.html"
 }
 
 # Get switch flags 
@@ -202,6 +201,7 @@ do
 	esac
 done
 
+check_codename
 
 if [ $remove_opt == 1 ]; then
     remove
